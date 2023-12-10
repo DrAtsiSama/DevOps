@@ -3,6 +3,55 @@
 Elodie JOLO
 Remy   SCHERIER
 
+
+#Déploiement d'une application Flask sur Azure avec Terraform et Kubernetes
+##Prérequis
+
+Assurez-vous d'avoir les outils suivants installés sur votre machine :
+
+    - Azure CLI
+    - Terraform
+    - Docker
+    - kubectl
+
+# 1. Déploiement de l'infrastructure Azure avec Terraform
+
+## 1.1. Clonez ce dépôt :
+
+```bash
+git clone git@github.com:DrAtsiSama/DevOps.git
+```
+
+## 1.2. Exécutez les commandes suivantes dans le répertoire terraform :
+```bash
+terraform init
+terraform apply
+```
+
+# 2. Configuration de l'application Flask et création de l'image Docker
+```bash
+docker build -t your-container-registry.azurecr.io/flask-app:v1 .
+docker push your-container-registry.azurecr.io/flask-app:v1
+```
+
+# 3. Configuration de Kubernetes et déploiement de l'application
+## 3.2. Appliquez la configuration Kubernetes :
+```bash
+kubectl apply -f deployment.yaml
+```
+# 4. Accès à l'application
+```bash
+kubectl get svc flask-app
+```
+
+# 5. Nettoyage des ressources
+
+Après avoir terminé l'utilisation de vos ressources, il est recommandé de les nettoyer pour éviter des frais inutiles.
+```bash
+terraform destroy
+```
+- - - - - - - - - - - - - - - - - - - - - 
+
 ## Ecrivez ici les inscriptions et explications pour déployer l'infrastructure et l'application sur Azure
 ## Introduction
 Bonjour et bienvenu dans notre cours sur comment déployer une infrastructure ainsi que l'application sur Azure.
