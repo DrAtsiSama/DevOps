@@ -3,8 +3,8 @@
 Elodie JOLO
 Remy   SCHERIER
 
-
-#Déploiement d'une application Flask sur Azure avec Terraform et Kubernetes
+## Ecrivez ici les inscriptions et explications pour déployer l'infrastructure et l'application sur Azure
+# Déploiement d'une application Flask sur Azure avec Terraform et Kubernetes
 ##Prérequis
 
 Assurez-vous d'avoir les outils suivants installés sur votre machine :
@@ -13,6 +13,18 @@ Assurez-vous d'avoir les outils suivants installés sur votre machine :
     - Terraform
     - Docker
     - kubectl
+
+
+
+## Introduction
+Bonjour et bienvenu dans notre cours sur comment déployer une infrastructure ainsi que l'application sur Azure.
+Tout d'abord une petite explication des différentes parties de ce projet.
+### Flask-app
+La partie "Flask-app" est l'application web développée avec Flask. Elle constitue le cœur de notre projet, fournissant les fonctionnalités principales.
+### Kubernetes
+Kubernetes est utilisé pour orchestrer et gérer les conteneurs de notre application. Il assure une mise à l'échelle efficace, une gestion des déploiements, et une haute disponibilité.
+### Terraform
+Terraform est la pour automatiser la gestion de l'infrastructure sur Azure. Il s'agit d'un outil d'Infrastructure as Code (IaC) permettant une configuration reproductible et évolutive de l'infrastructure cloud.
 
 # 1. Déploiement de l'infrastructure Azure avec Terraform
 
@@ -121,48 +133,7 @@ terraform destroy
 helm uninstall ingress-nginx --namespace ingress-nginx
 kubectl delete -f kubernetes
 ```
-- - - - - - - - - - - - - - - - - - - - - 
 
-## Ecrivez ici les inscriptions et explications pour déployer l'infrastructure et l'application sur Azure
-## Introduction
-Bonjour et bienvenu dans notre cours sur comment déployer une infrastructure ainsi que l'application sur Azure.
-Tout d'abord une petite explication des différentes parties de ce projet.
-### Flask-app
-La partie "Flask-app" est l'application web développée avec Flask. Elle constitue le cœur de notre projet, fournissant les fonctionnalités principales.
-### Kubernetes
-Kubernetes est utilisé pour orchestrer et gérer les conteneurs de notre application. Il assure une mise à l'échelle efficace, une gestion des déploiements, et une haute disponibilité.
-### Terraform (remy en cours)
-Terraform est la pour automatiser la gestion de l'infrastructure sur Azure. Il s'agit d'un outil d'Infrastructure as Code (IaC) permettant une configuration reproductible et évolutive de l'infrastructure cloud.
-- terraform init
-- terraform plan
-- terraform apply -> yes
-#### installation
-
-
-## Instructions de Déploiement
-### Prérequis
-
-Avant de commencer le déploiement, assurez-vous d'avoir les éléments suivants :
-
-    Un compte Azure avec les autorisations nécessaires pour créer des ressources.
-    Azure CLI installé sur votre machine locale.
-
-
-## Etapes à suivres
-Les différentes parties du projet étant expliquées, nous pouvons désormais nous lancer dans le déployement de notre application.
-### Déployer une infrastructure Azure sur Terraform
-- cluster kubernetes
-- registre docker
-### Création d'une image Docker de notre application Flask
-- Image Docker
-- registry Docker
-### Déployer les ressources sur Kubernetes
-- flask
-- redis
-- ingress
-
-### Adresse public
-- ressource azurerm_public_ip
 
 
 ### Conclusion
