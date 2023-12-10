@@ -19,7 +19,7 @@ resource "azurerm_resource_group" "rg_arg" {
   name     = var.resource_group
   location = var.location
   tags = {
-    environment = "Terraform Lab"
+    environment = "Production"
   }
 }
 
@@ -111,6 +111,6 @@ module "storage_account" {
   resource_group = azurerm_resource_group.rg_arg
   container_envs = ["dev", "test", "prod"]
   tags = {
-    environment = "Terraform Lab"
+    environment = "Production"
   }
 }

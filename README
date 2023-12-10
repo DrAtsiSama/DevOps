@@ -30,15 +30,84 @@ terraform apply
 
 # 2. Configuration de l'application Flask et création de l'image Docker
 ```bash
+az acr login --name <container-registry-name>
 docker build -t your-container-registry.azurecr.io/flask-app:v1 .
 docker push your-container-registry.azurecr.io/flask-app:v1
 ```
+<container-registry-name> = acrelo
 
 # 3. Configuration de Kubernetes et déploiement de l'application
+## 3.1. Se connecter au cluster kubernetes:
+```bash
+az aks get-credentials --overwrite-existing -n <cluster name> -g <resource group name>
+```
+cluster-name = kubernetesCluster
+ressource group name = azurerm_resource_group.rg_arg.name = rg-esgi-relo
 ## 3.2. Appliquez la configuration Kubernetes :
 ```bash
+NAMESPACE=ingress-basic
+
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+  --create-namespace \
+  --namespace $NAMESPACE \
+  --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz
+
+REGISTRY_NAME=<REGISTRY_NAME>
+SOURCE_REGISTRY=registry.k8s.io
+CONTROLLER_IMAGE=ingress-nginx/controller
+CONTROLLER_TAG=v1.8.1
+PATCH_IMAGE=ingress-nginx/kube-webhook-certgen
+PATCH_TAG=v20230407
+DEFAULTBACKEND_IMAGE=defaultbackend-amd64
+DEFAULTBACKEND_TAG=1.5
+
+az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$CONTROLLER_IMAGE:$CONTROLLER_TAG --image $CONTROLLER_IMAGE:$CONTROLLER_TAG
+az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$PATCH_IMAGE:$PATCH_TAG --image $PATCH_IMAGE:$PATCH_TAG
+az acr import --name $REGISTRY_NAME --source $SOURCE_REGISTRY/$DEFAULTBACKEND_IMAGE:$DEFAULTBACKEND_TAG --image $DEFAULTBACKEND_IMAGE:$DEFAULTBACKEND_TAG
+
+# Add the ingress-nginx repository
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+# Set variable for ACR location to use for pulling images
+ACR_URL=<REGISTRY_URL>
+
+# Use Helm to deploy an NGINX ingress controller
+helm install ingress-nginx ingress-nginx/ingress-nginx \
+    --version 4.7.1 \
+    --namespace ingress-basic \
+    --create-namespace \
+    --set controller.replicaCount=2 \
+    --set controller.nodeSelector."kubernetes\.io/os"=linux \
+    --set controller.image.registry=$ACR_URL \
+    --set controller.image.image=$CONTROLLER_IMAGE \
+    --set controller.image.tag=$CONTROLLER_TAG \
+    --set controller.image.digest="" \
+    --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/os"=linux \
+    --set controller.service.loadBalancerIP= <internal-ip> \
+    --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-internal"=true \
+    --set controller.service.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-health-probe-request-path"=/healthz \
+    --set controller.admissionWebhooks.patch.image.registry=$ACR_URL \
+    --set controller.admissionWebhooks.patch.image.image=$PATCH_IMAGE \
+    --set controller.admissionWebhooks.patch.image.tag=$PATCH_TAG \
+    --set controller.admissionWebhooks.patch.image.digest="" \
+    --set defaultBackend.nodeSelector."kubernetes\.io/os"=linux \
+    --set defaultBackend.image.registry=$ACR_URL \
+    --set defaultBackend.image.image=$DEFAULTBACKEND_IMAGE \
+    --set defaultBackend.image.tag=$DEFAULTBACKEND_TAG \
+    --set defaultBackend.image.digest=""
+
+#check the load balancer service
+kubectl get services --namespace ingress-basic -o wide -w ingress-nginx-controller
+
 kubectl apply -f deployment.yaml
 ```
+REGISTRY_NAME = 
+ACR_URL = 
+internal-ip = ip in output
 # 4. Accès à l'application
 ```bash
 kubectl get svc flask-app
@@ -49,6 +118,8 @@ kubectl get svc flask-app
 Après avoir terminé l'utilisation de vos ressources, il est recommandé de les nettoyer pour éviter des frais inutiles.
 ```bash
 terraform destroy
+helm uninstall ingress-nginx --namespace ingress-nginx
+kubectl delete -f kubernetes
 ```
 - - - - - - - - - - - - - - - - - - - - - 
 
