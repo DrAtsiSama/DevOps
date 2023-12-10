@@ -10,6 +10,7 @@ terraform {
 
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
+  # skip_provider_registration = true
   features {}
 }
 
@@ -22,20 +23,6 @@ resource "azurerm_resource_group" "rg_arg" {
   }
 }
 
-resource "azurerm_public_ip" "ip" {
-  name                = var.public_ip_name
-  resource_group_name = azurerm_resource_group.rg_main.name
-  location            = azurerm_resource_group.rg_main.location
-  allocation_method   = "Static"
-
-  tags = {
-    environment = "Production"
-  }
-}
-data "azurerm_public_ip" "ip" {
-  name                = azurerm_public_ip.ip.name
-  resource_group_name = azurerm_resource_group.rg_main.name
-}
 # Registre de conteneur (container registry)
 resource "azurerm_container_registry" "rg_container_registry" {
   name                = "acrelo"
@@ -66,9 +53,24 @@ resource "azurerm_kubernetes_cluster" "rg_kubernetes_cluster" {
   }
 }
 
+resource "azurerm_public_ip" "ip" {
+  name                = "azpi"
+  resource_group_name = azurerm_kubernetes_cluster.rg_kubernetes_cluster.resource_group_name
+  location            = azurerm_kubernetes_cluster.rg_kubernetes_cluster.location
+  allocation_method   = "Static"
+
+  tags = {
+    environment = "Production"
+  }
+}
+data "azurerm_public_ip" "ip" {
+  name                = azurerm_public_ip.ip.name
+  resource_group_name = azurerm_resource_group.rg_arg.name
+}
+
 resource "azurerm_role_assignment" "rg_acr_pull" {
   depends_on = [azurerm_kubernetes_cluster.rg_kubernetes_cluster]
-  principal_id                     = azurerm_kubernetes_cluster.rg_kubernetes_cluster.kubelet_identity[0].object_id
+  principal_id                     = azurerm_kubernetes_cluster.rg_kubernetes_cluster.identity.0.principal_id
   role_definition_name             = "AcrPull"
   scope                            = azurerm_container_registry.rg_container_registry.id
   skip_service_principal_aad_check = true
@@ -86,7 +88,7 @@ resource "azurerm_role_assignment" "acr_Push" {
 
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_public_ip" "rg_public_ip" {
+/*resource "azurerm_public_ip" "rg_public_ip" {
   name                = "publicIp1"
   resource_group_name = azurerm_resource_group.rg_arg.name
   location            = azurerm_resource_group.rg_arg.location
@@ -95,12 +97,12 @@ resource "azurerm_public_ip" "rg_public_ip" {
   tags = {
     environment = "Terraform Lab"
   }
-}
+}*/
 
-output "instance_public_ip" {
+/*output "instance_public_ip" {
    description = "Public IP"
    value       = azurerm_public_ip.rg_public_ip.public_ip_prefix_id
-}
+}*/
 
 # Storage account
 module "storage_account" {
