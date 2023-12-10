@@ -22,6 +22,20 @@ resource "azurerm_resource_group" "rg_arg" {
   }
 }
 
+resource "azurerm_public_ip" "ip" {
+  name                = var.public_ip_name
+  resource_group_name = azurerm_resource_group.rg_main.name
+  location            = azurerm_resource_group.rg_main.location
+  allocation_method   = "Static"
+
+  tags = {
+    environment = "Production"
+  }
+}
+data "azurerm_public_ip" "ip" {
+  name                = azurerm_public_ip.ip.name
+  resource_group_name = azurerm_resource_group.rg_main.name
+}
 # Registre de conteneur (container registry)
 resource "azurerm_container_registry" "rg_container_registry" {
   name                = "acrelo"
@@ -45,6 +59,10 @@ resource "azurerm_kubernetes_cluster" "rg_kubernetes_cluster" {
 
   identity {
     type = "SystemAssigned"
+  }
+
+  tags = {
+    Environment = "Production"
   }
 }
 
